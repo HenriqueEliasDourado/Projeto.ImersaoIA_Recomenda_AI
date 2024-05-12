@@ -1,0 +1,279 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/HenriqueEliasDourado/Projeto.ImersaoIA_Recomenda_AI/blob/main/EntertainMe\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Instalando o SDK do Google\n"
+      ],
+      "metadata": {
+        "id": "IFuJzb7sagQa"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 55,
+      "metadata": {
+        "id": "nFQLKQ6hfXch"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install -q -U google-generativeai"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Configurações iniciais"
+      ],
+      "metadata": {
+        "id": "JrtrlibNasT8"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 56,
+      "metadata": {
+        "id": "IthzwfnAfcsi"
+      },
+      "outputs": [],
+      "source": [
+        "import google.generativeai as genai\n",
+        "\n",
+        "GOOGLE_API_KEY=\"Secret_key\"\n",
+        "genai.configure(api_key=GOOGLE_API_KEY)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Listando os modelos disponíveis"
+      ],
+      "metadata": {
+        "id": "4zIDDRA7aww9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 144
+        },
+        "id": "iD3ihugymWBt",
+        "outputId": "1e0ccca0-78d2-4c06-f008-ae19d23ca2c3"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "models/gemini-1.0-pro\n",
+            "models/gemini-1.0-pro-001\n",
+            "models/gemini-1.0-pro-latest\n",
+            "models/gemini-1.0-pro-vision-latest\n",
+            "models/gemini-1.5-pro-latest\n",
+            "models/gemini-pro\n",
+            "models/gemini-pro-vision\n"
+          ]
+        }
+      ],
+      "source": [
+        "for m in genai.list_models():\n",
+        "  if 'generateContent' in m.supported_generation_methods:\n",
+        "    print(m.name)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "id": "O1ochaeyDn_o"
+      },
+      "outputs": [],
+      "source": [
+        "generation_config = {\n",
+        "  \"candidate_count\": 1,\n",
+        "  \"temperature\": 0.5,\n",
+        "}"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "metadata": {
+        "id": "NIiSs1R5mVJE"
+      },
+      "outputs": [],
+      "source": [
+        "model = genai.GenerativeModel(model_name='gemini-1.0-pro',\n",
+        "                                  generation_config=generation_config,)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# salvando historico"
+      ],
+      "metadata": {
+        "id": "yJ7Ky1grbIDA"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "chat = model.start_chat(history=[])"
+      ],
+      "metadata": {
+        "id": "VlPzofAz5xIl"
+      },
+      "execution_count": 51,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# IA recomenda\n"
+      ],
+      "metadata": {
+        "id": "hv6Q6uRHa1sz"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Função para exibir o menu de opções\n",
+        "def exibir_menu():\n",
+        "    print(\"Opções de recomendações:\")\n",
+        "    print(\"1. Filmes\")\n",
+        "    print(\"2. Séries\")\n",
+        "    print(\"3. Músicas\")\n",
+        "    print(\"4. Jogos\")\n",
+        "    print(\"5. Outros\")\n",
+        "\n",
+        "# Função para obter a recomendação do modelo de linguagem\n",
+        "def obter_recomendacao(tipo_recomendacao, inspiracao):\n",
+        "    prompt = f\"Recomende um {tipo_recomendacao} parecido com {inspiracao}\"\n",
+        "    response = chat.send_message(prompt)\n",
+        "    return response.text\n",
+        "\n",
+        "# Loop principal do programa\n",
+        "while True:\n",
+        "    exibir_menu()\n",
+        "\n",
+        "    # Obter a escolha do usuário\n",
+        "    while True:\n",
+        "        try:\n",
+        "            escolha = int(input(\"Selecione o tipo de recomendação (1-5): \\n\"))\n",
+        "            if 1 <= escolha <= 5:\n",
+        "                break\n",
+        "            else:\n",
+        "                print(\"Opção inválida. Por favor, escolha um número entre 1 e 5.\")\n",
+        "        except ValueError:\n",
+        "            print(\"Entrada inválida. Por favor, digite um número.\")\n",
+        "\n",
+        "    # Mapear a escolha para o tipo de recomendação\n",
+        "    tipos_recomendacoes = {\n",
+        "        1: \"Filme\",\n",
+        "        2: \"Série\",\n",
+        "        3: \"Música\",\n",
+        "        4: \"Jogo\",\n",
+        "        5: \"Outro\"\n",
+        "    }\n",
+        "    tipo_recomendacao = tipos_recomendacoes[escolha]\n",
+        "\n",
+        "    # Obter a inspiração do usuário\n",
+        "    print(\"_\" * 50)\n",
+        "    inspiracao = input(\"Parecido com: \\n\")\n",
+        "    print(\"_\" * 50)\n",
+        "\n",
+        "    # Obter a recomendação do modelo\n",
+        "    recomendacao = obter_recomendacao(tipo_recomendacao, inspiracao)\n",
+        "\n",
+        "    # Exibir a recomendação\n",
+        "    print(\"_\" * 50)\n",
+        "    print(f\"{recomendacao}\")\n",
+        "    print(\"_\" * 50)\n",
+        "\n",
+        "    # Verificar se o usuário gostou da recomendação\n",
+        "    while True:\n",
+        "        gostou = input(\"Gostou? (sim/não/trocar): \\n\").lower()\n",
+        "        if gostou in (\"sim\", \"não\", \"trocar\"):\n",
+        "            break\n",
+        "        else:\n",
+        "            print(\"Resposta inválida. Por favor, responda com 'sim', 'não' ou 'trocar'.\")\n",
+        "\n",
+        "    if gostou == \"sim\":\n",
+        "        print(\"Espero que goste da recomendação!\")\n",
+        "        break\n",
+        "    elif gostou == \"não\":\n",
+        "        print(\"\\n Ok, vamos tentar outra recomendação. \\n\")\n",
+        "        print(\"_\" * 50)\n",
+        "        print(f\"{recomendacao}\")\n",
+        "        print(\"_\" * 50)\n",
+        "\n",
+        "\n",
+        "    elif gostou == \"trocar\":\n",
+        "        print(\"Ok, vamos tentar outro tipo de recomendação. \\n\")"
+      ],
+      "metadata": {
+        "id": "6JobkWHdU4He",
+        "outputId": "0b828a51-6f42-42b2-865a-81b4785db427",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 344
+        }
+      },
+      "execution_count": 50,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Opções de recomendações:\n",
+            "1. Filmes\n",
+            "2. Séries\n",
+            "3. Músicas\n",
+            "4. Jogos\n",
+            "5. Outros\n",
+            "Selecione o tipo de recomendação (1-5): \n",
+            "1\n",
+            "__________________________________________________\n",
+            "Parecido com: \n",
+            "LOL\n",
+            "__________________________________________________\n",
+            "__________________________________________________\n",
+            "* **Para Todos os Garotos que Já Amei** (2018)\n",
+            "__________________________________________________\n",
+            "Gostou? (sim/não/trocar): \n",
+            "sim\n",
+            "Espero que goste da recomendação!\n"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "name": "Olá, este é o Colaboratory",
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
